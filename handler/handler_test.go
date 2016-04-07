@@ -27,7 +27,7 @@ func TestHandlePackage(t *testing.T) {
 	pkg, ok := pkgs[examplePkg]
 	ensure.True(t, ok)
 
-	tspecs := HandlePackage(pkg, pat)
+	tspecs := WalkPackage(pkg, pat)
 	ensure.DeepEqual(t, len(tspecs), 1)
 	ensure.DeepEqual(t, tspecs[0].Name.Name, exampleStruct)
 }

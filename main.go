@@ -35,6 +35,6 @@ func main() {
 	}
 
 	for _, pkg := range pkgs {
-		tspecs := handler.HandlePackage(pkg, pat)
+		handler.WalkPackage(pkg, pat)
 	}
 }

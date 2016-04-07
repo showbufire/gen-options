@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func HandlePackage(pkg *ast.Package, pat *regexp.Regexp) []*ast.TypeSpec {
+func WalkPackage(pkg *ast.Package, pat *regexp.Regexp) []*ast.TypeSpec {
 	var structs []*ast.TypeSpec
 	if pkg.Name == "main" || strings.HasSuffix(pkg.Name, "_test") {
 		return nil
