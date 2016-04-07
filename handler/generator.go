@@ -73,8 +73,10 @@ func genOptionFromField(structName string, field *ast.Field) *ast.FuncDecl {
 		}},
 	}
 
+	outerName := "Option" + strings.ToUpper(fieldName[0:1]) + fieldName[1:len(fieldName)]
+
 	return &ast.FuncDecl{
-		Name: ast.NewIdent("Option" + fieldName), // TODO: load field tag
+		Name: ast.NewIdent(outerName), // TODO: load field tag
 		Type: outerType,
 		Body: outerBody,
 	}
