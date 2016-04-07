@@ -80,6 +80,9 @@ func work() error {
 
 func write2file(outDir, outPkg string, fname2decls map[string][]ast.Decl) error {
 	for filename, decls := range fname2decls {
+		if len(decls) == 0 {
+			continue
+		}
 		file := &ast.File{
 			Name:  ast.NewIdent(outPkg),
 			Decls: decls,

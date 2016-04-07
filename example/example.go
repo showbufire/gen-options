@@ -1,31 +1,13 @@
 package example
 
-type Bar struct {
-}
+import "go/ast"
 
 type Foo struct {
-	fst int
-	snd *Bar
+	fst    int
+	snd    *Bar
+	trd    []string
+	fourth *ast.Field
 }
 
-type Option func(*Foo)
-
-func OptionFst(fst int) Option {
-	return func(f *Foo) {
-		f.fst = fst
-	}
-}
-
-func OptionSnd(snd *Bar) Option {
-	return func(f *Foo) {
-		f.snd = snd
-	}
-}
-
-func NewFoo(options ...Option) *Foo {
-	f := &Foo{}
-	for _, o := range options {
-		o(f)
-	}
-	return f
+type Bar struct {
 }
