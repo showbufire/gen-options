@@ -6,7 +6,7 @@ import (
 	"github.com/facebookgo/ensure"
 )
 
-func TestExample(t *testing.T) {
+func TestFoo(t *testing.T) {
 	foo := NewFoo(
 		OptionFirst(3),
 		OptionSecond(&Bar{}),
@@ -15,6 +15,9 @@ func TestExample(t *testing.T) {
 	)
 	ensure.DeepEqual(t, foo.fst, 3)
 	ensure.DeepEqual(t, foo.trd, []string{"yo"})
+}
+
+func TestBaz(t *testing.T) {
 	baz := &Baz{}
 	OptionXYZ(42)(baz)
 	ensure.DeepEqual(t, baz.xyz, 42)

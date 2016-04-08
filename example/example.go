@@ -9,6 +9,7 @@ type Foo struct {
 	snd    *Bar `options:"Second"`
 	trd    []string
 	fourth *ast.Field
+	fifth  int `options:"_omit"`
 }
 
 type Bar struct {

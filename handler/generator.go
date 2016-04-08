@@ -9,7 +9,10 @@ import (
 	"github.com/facebookgo/stackerr"
 )
 
-const optionsTagName = "options"
+const (
+	optionsTagName = "options"
+	omitTag        = "_omit"
+)
 
 func GenFromStructType(tspec *ast.TypeSpec) ([]ast.Decl, error) {
 	decls := []ast.Decl{}
@@ -18,12 +21,20 @@ func GenFromStructType(tspec *ast.TypeSpec) ([]ast.Decl, error) {
 	}
 	for _, field := range tspec.Type.(*ast.StructType).Fields.List {
 		decl := genOptionFromField(tspec.Name.Name, field)
-		decls = append(decls, decl)
+		if decl != nil {
+			decls = append(decls, decl)
+		}
 	}
 	return decls, nil
 }
 
 func genOptionFromField(structName string, field *ast.Field) *ast.FuncDecl {
+	tag := getTag(field)
+	if tag == omitTag {
+		// skip this field
+		return nil
+	}
+
 	svarName := strings.ToLower(structName[0:1])
 	fieldName := field.Names[0].Name
 
@@ -74,25 +85,27 @@ func genOptionFromField(structName string, field *ast.Field) *ast.FuncDecl {
 		}},
 	}
 
-	tags := ""
-	if field.Tag != nil {
-		tags = field.Tag.Value
-	}
-	outerName := getOptionFuncName(tags, fieldName)
+	nameSuffix := ""
+	if tag != "" {
+		nameSuffix = tag
+	} else {
+		nameSuffix = strings.ToUpper(fieldName[0:1]) + fieldName[1:len(fieldName)]
 
+	}
 	return &ast.FuncDecl{
-		Name: ast.NewIdent(outerName), // TODO: load field tag
+		Name: ast.NewIdent("Option" + nameSuffix),
 		Type: outerType,
 		Body: outerBody,
 	}
 }
 
-func getOptionFuncName(tags string, fieldName string) string {
-	if tags != "" && tags[0] == '`' && tags[len(tags)-1] == '`' {
-		tag := reflect.StructTag(tags[1:len(tags)]).Get(optionsTagName)
-		if tag != "" {
-			return "Option" + tag
-		}
+func getTag(field *ast.Field) string {
+	if field.Tag == nil {
+		return ""
 	}
-	return "Option" + strings.ToUpper(fieldName[0:1]) + fieldName[1:len(fieldName)]
+	tags := field.Tag.Value
+	if tags != "" && tags[0] == '`' && tags[len(tags)-1] == '`' {
+		return reflect.StructTag(tags[1:len(tags)]).Get(optionsTagName)
+	}
+	return ""
 }
