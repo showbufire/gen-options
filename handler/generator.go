@@ -13,21 +13,27 @@ const (
 	optionsTagName = "options"
 )
 
-func GenFromStructType(prefix string, tspec *ast.TypeSpec) ([]ast.Decl, error) {
-	decls := []ast.Decl{}
-	if _, ok := tspec.Type.(*ast.StructType); !ok {
-		return decls, stackerr.Newf("not a struct type %v", tspec)
-	}
-	for _, field := range tspec.Type.(*ast.StructType).Fields.List {
-		decl := genOptionFromField(tspec.Name.Name, field, prefix)
-		if decl != nil {
-			decls = append(decls, decl)
-		}
-	}
-	return decls, nil
+type GenResult struct {
+	Comment *ast.CommentGroup
+	Decl    ast.Decl
+	Name    string
 }
 
-func genOptionFromField(structName string, field *ast.Field, prefix string) *ast.FuncDecl {
+func GenFromStructType(prefix string, tspec *ast.TypeSpec) ([]*GenResult, error) {
+	gened := []*GenResult{}
+	if _, ok := tspec.Type.(*ast.StructType); !ok {
+		return gened, stackerr.Newf("not a struct type %v", tspec)
+	}
+	for _, field := range tspec.Type.(*ast.StructType).Fields.List {
+		res := genOptionFromField(tspec.Name.Name, field, prefix)
+		if res != nil {
+			gened = append(gened, res)
+		}
+	}
+	return gened, nil
+}
+
+func genOptionFromField(structName string, field *ast.Field, prefix string) *GenResult {
 	found, tag, err := getTag(field)
 	if err != nil || found == false {
 		// skip a field by default if no field tag
@@ -95,12 +101,15 @@ func genOptionFromField(structName string, field *ast.Field, prefix string) *ast
 	} else {
 		nameSuffix = strings.ToUpper(fieldName[0:1]) + fieldName[1:len(fieldName)]
 	}
-	outerName := prefix + nameSuffix
-	return &ast.FuncDecl{
-		Name: ast.NewIdent(outerName),
-		Type: outerType,
-		Body: outerBody,
-		Doc:  getDoc(field, outerName),
+	name := prefix + nameSuffix
+	return &GenResult{
+		Decl: &ast.FuncDecl{
+			Name: ast.NewIdent(name),
+			Type: outerType,
+			Body: outerBody,
+		},
+		Comment: getDoc(field, name),
+		Name:    name,
 	}
 }
 

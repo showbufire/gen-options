@@ -4,8 +4,8 @@ package example
 
 import "go/ast"
 
-func MyOptionFirst(fst int) func // MyOptionFirst the generated function is MyOptionFirst
-(*Foo) {
+// MyOptionFirst the generated function is MyOptionFirst
+func MyOptionFirst(fst int) func(*Foo) {
 	return func(f *Foo) {
 		f.fst = fst
 	}

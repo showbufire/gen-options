@@ -61,32 +61,36 @@ func work() error {
 
 	for _, pkg := range pkgs {
 		tspecs := handler.WalkPackage(pkg, pat)
-		fname2decls := make(map[string][]ast.Decl)
+		fname2gened := make(map[string][]*handler.GenResult)
 		for _, tspec := range tspecs {
-			decls, err := handler.GenFromStructType(*prefix, tspec)
+			gened, err := handler.GenFromStructType(*prefix, tspec)
 			if err != nil {
 				return stackerr.Wrap(err)
 			}
 			filename := fset.Position(tspec.Pos()).Filename
 			filename = strings.TrimSuffix(filepath.Base(filename), ".go") + "_options.go"
-			if _, ok := fname2decls[filename]; !ok {
-				fname2decls[filename] = []ast.Decl{}
+			if _, ok := fname2gened[filename]; !ok {
+				fname2gened[filename] = []*handler.GenResult{}
 			}
-			for _, decl := range decls {
-				fname2decls[filename] = append(fname2decls[filename], decl)
+			for _, res := range gened {
+				fname2gened[filename] = append(fname2gened[filename], res)
 			}
 		}
-		if err := write2file(*outDir, pkg.Name, fname2decls); err != nil {
+		if err := write2file(*outDir, pkg.Name, fname2gened); err != nil {
 			return stackerr.Wrap(err)
 		}
 	}
 	return nil
 }
 
-func write2file(outDir, outPkg string, fname2decls map[string][]ast.Decl) error {
-	for filename, decls := range fname2decls {
-		if len(decls) == 0 {
+func write2file(outDir, outPkg string, fname2gened map[string][]*handler.GenResult) error {
+	for filename, gened := range fname2gened {
+		if len(gened) == 0 {
 			continue
+		}
+		decls := []ast.Decl{}
+		for _, g := range gened {
+			decls = append(decls, g.Decl)
 		}
 		file := &ast.File{
 			Name:  ast.NewIdent(outPkg),
@@ -112,12 +116,21 @@ func write2file(outDir, outPkg string, fname2decls map[string][]ast.Decl) error 
 		if err := printer.Fprint(&buf, fset, file); err != nil {
 			return stackerr.Wrap(err)
 		}
+		src := buf.Bytes()
+		for _, g := range gened {
+			if g.Comment == nil {
+				continue
+			}
+			funcName := "func " + g.Name + "("
+			comments := ""
+			for _, c := range g.Comment.List {
+				comments += c.Text + "\n"
+			}
+			src = bytes.Replace(src, []byte(funcName),
+				[]byte(comments+funcName), 1)
+		}
 
-		// Always put blank lines between funcs.
-		src := bytes.Replace(buf.Bytes(), []byte("}\nfunc"), []byte("}\n\nfunc"), -1)
-
-		var err error
-		src, err = imports.Process(filename, src, nil)
+		src, err := imports.Process(filename, src, nil)
 		if err != nil {
 			return stackerr.Wrap(err)
 		}
