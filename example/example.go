@@ -1,6 +1,6 @@
 package example
 
-//go:generate gen-options -s Foo -w
+//go:generate gen-options -s Foo|Baz -w
 
 import "go/ast"
 
