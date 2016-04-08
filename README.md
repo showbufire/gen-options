@@ -36,3 +36,10 @@ install: `go get github.com/showbufire/gen-options`
 help: `gen-options -h`
 
 common usage: `gen-options -s Foo -w`
+
+By default, for each field named `bar`, it will generate a function `OptionBar`. You can tweak the default behavior, by
+
+* feed a `-f=Prefix` option. The generated function will be `PrefixBar`.
+* add an `options` field tag to change the suffix of the function name.
+For example, if `Bar string ``options:"Baz"```, then the generated will be `OptionBaz`.
+* omit a field by adding omit tag ```options:"_omit"```. No function will be generated for this field.
