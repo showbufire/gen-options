@@ -19,7 +19,7 @@ func NewFoo(options ...func(*Foo)) {
      }
 }
 ```
-then you need to defined one function per field
+then you need to define one function per field
 ```
 func OptionFirstField(int x) func(*Foo) {
      return func(f *Foo) {
@@ -30,6 +30,9 @@ func OptionFirstField(int x) func(*Foo) {
 gen-options can help generate these functions for you.
 
 ## Usage
+
 install: `go get github.com/showbufire/gen-options`
+
 help: `gen-options -h`
+
 common usage: `gen-options -s Foo -w`
