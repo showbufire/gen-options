@@ -31,11 +31,17 @@ func GenFromStructType(tspec *ast.TypeSpec) ([]ast.Decl, error) {
 func genOptionFromField(structName string, field *ast.Field) *ast.FuncDecl {
 	tag := getTag(field)
 	if tag == omitTag {
-		// skip this field
+		// skip this field if omitted
 		return nil
 	}
 
 	svarName := strings.ToLower(structName[0:1])
+
+	if len(field.Names) == 0 {
+		// skip anonymous field
+		return nil
+	}
+
 	fieldName := field.Names[0].Name
 
 	outerType := &ast.FuncType{

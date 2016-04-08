@@ -5,6 +5,7 @@ package example
 import "go/ast"
 
 type Foo struct {
+	*Bar
 	fst    int  `options:"First"`
 	snd    *Bar `options:"Second"`
 	trd    []string
