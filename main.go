@@ -54,7 +54,7 @@ func work() error {
 		return stackerr.Wrap(err)
 	}
 
-	pkgs, err := parser.ParseDir(fset, *structPkgDir, nil, parser.AllErrors)
+	pkgs, err := parser.ParseDir(fset, *structPkgDir, nil, parser.AllErrors|parser.ParseComments)
 	if err != nil {
 		return stackerr.Wrap(err)
 	}

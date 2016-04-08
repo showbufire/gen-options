@@ -96,12 +96,13 @@ func genOptionFromField(structName string, field *ast.Field, prefix string) *ast
 		nameSuffix = tag
 	} else {
 		nameSuffix = strings.ToUpper(fieldName[0:1]) + fieldName[1:len(fieldName)]
-
 	}
+	outerName := prefix + nameSuffix
 	return &ast.FuncDecl{
-		Name: ast.NewIdent(prefix + nameSuffix),
+		Name: ast.NewIdent(outerName),
 		Type: outerType,
 		Body: outerBody,
+		Doc:  getDoc(field, outerName),
 	}
 }
 
@@ -114,4 +115,24 @@ func getTag(field *ast.Field) string {
 		return reflect.StructTag(tags[1:len(tags)]).Get(optionsTagName)
 	}
 	return ""
+}
+
+func getDoc(field *ast.Field, funcName string) *ast.CommentGroup {
+	if field.Doc == nil {
+		return nil
+	}
+
+	// to make go lint happy, only works with "//" style for now
+	fstComment := field.Doc.List[0].Text
+	c := &ast.Comment{}
+	if strings.HasPrefix(fstComment, "//") {
+		c.Text = "// " + funcName + fstComment[2:len(fstComment)]
+	} else {
+		c.Text = fstComment
+	}
+	doc := &ast.CommentGroup{}
+	doc.List = make([]*ast.Comment, len(field.Doc.List), len(field.Doc.List))
+	copy(doc.List, field.Doc.List)
+	doc.List[0] = c
+	return doc
 }

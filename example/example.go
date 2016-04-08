@@ -6,9 +6,11 @@ import "go/ast"
 
 type Foo struct {
 	*Bar
-	fst    int  `options:"First"`
-	snd    *Bar `options:"Second"`
-	trd    []string
+	fst int  `options:"First"`
+	snd *Bar `options:"Second"`
+	trd []string
+	// fourth field first comment 1st line
+	// fourth field first comment 2nd line
 	fourth *ast.Field
 	fifth  int `options:"_omit"`
 }
