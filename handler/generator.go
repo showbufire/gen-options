@@ -14,13 +14,13 @@ const (
 	omitTag        = "_omit"
 )
 
-func GenFromStructType(tspec *ast.TypeSpec) ([]ast.Decl, error) {
+func GenFromStructType(prefix string, tspec *ast.TypeSpec) ([]ast.Decl, error) {
 	decls := []ast.Decl{}
 	if _, ok := tspec.Type.(*ast.StructType); !ok {
 		return decls, stackerr.Newf("not a struct type %v", tspec)
 	}
 	for _, field := range tspec.Type.(*ast.StructType).Fields.List {
-		decl := genOptionFromField(tspec.Name.Name, field)
+		decl := genOptionFromField(tspec.Name.Name, field, prefix)
 		if decl != nil {
 			decls = append(decls, decl)
 		}
@@ -28,7 +28,7 @@ func GenFromStructType(tspec *ast.TypeSpec) ([]ast.Decl, error) {
 	return decls, nil
 }
 
-func genOptionFromField(structName string, field *ast.Field) *ast.FuncDecl {
+func genOptionFromField(structName string, field *ast.Field, prefix string) *ast.FuncDecl {
 	tag := getTag(field)
 	if tag == omitTag {
 		// skip this field if omitted
@@ -99,7 +99,7 @@ func genOptionFromField(structName string, field *ast.Field) *ast.FuncDecl {
 
 	}
 	return &ast.FuncDecl{
-		Name: ast.NewIdent("Option" + nameSuffix),
+		Name: ast.NewIdent(prefix + nameSuffix),
 		Type: outerType,
 		Body: outerBody,
 	}

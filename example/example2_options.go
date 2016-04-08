@@ -2,7 +2,7 @@
 
 package example
 
-func OptionXYZ(xyz int) func(*Baz) {
+func MyOptionXYZ(xyz int) func(*Baz) {
 	return func(b *Baz) {
 		b.xyz = xyz
 	}

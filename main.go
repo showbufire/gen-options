@@ -27,6 +27,7 @@ var (
 	structPat    = flag.String("s", "", "regexp pattern for selecting interface types by name")
 	outDir       = flag.String("o", ".", "output directory")
 	writeFiles   = flag.Bool("w", false, "write over existing files in output directory (default: writes to stdout)")
+	prefix       = flag.String("f", "Option", "prefix of the function names")
 
 	fset = token.NewFileSet()
 )
@@ -62,7 +63,7 @@ func work() error {
 		tspecs := handler.WalkPackage(pkg, pat)
 		fname2decls := make(map[string][]ast.Decl)
 		for _, tspec := range tspecs {
-			decls, err := handler.GenFromStructType(tspec)
+			decls, err := handler.GenFromStructType(*prefix, tspec)
 			if err != nil {
 				return stackerr.Wrap(err)
 			}

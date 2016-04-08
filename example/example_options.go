@@ -4,25 +4,25 @@ package example
 
 import "go/ast"
 
-func OptionFirst(fst int) func(*Foo) {
+func MyOptionFirst(fst int) func(*Foo) {
 	return func(f *Foo) {
 		f.fst = fst
 	}
 }
 
-func OptionSecond(snd *Bar) func(*Foo) {
+func MyOptionSecond(snd *Bar) func(*Foo) {
 	return func(f *Foo) {
 		f.snd = snd
 	}
 }
 
-func OptionTrd(trd []string) func(*Foo) {
+func MyOptionTrd(trd []string) func(*Foo) {
 	return func(f *Foo) {
 		f.trd = trd
 	}
 }
 
-func OptionFourth(fourth *ast.Field) func(*Foo) {
+func MyOptionFourth(fourth *ast.Field) func(*Foo) {
 	return func(f *Foo) {
 		f.fourth = fourth
 	}
