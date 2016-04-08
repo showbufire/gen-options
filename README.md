@@ -40,6 +40,7 @@ common usage: `gen-options -s Foo -w`
 By default, for each field named `bar`, it will generate a function `OptionBar`. You can tweak the default behavior, by
 
 * feed a `-f=Prefix` option. The generated function will be `PrefixBar`.
-* add an `options` field tag to change the suffix of the function name.
-For example, if ``Bar string `options:"Baz"` ``, then the generated will be `OptionBaz`.
-* omit a field by adding omit tag `` `options:"_omit"` ``. No function will be generated for this field.
+* add an `options` field tag to opt in for function generation.
+For example, if ``bar string `options:"Baz"` ``, then the generated will be `OptionBaz`. If it's `options:""`, then the generated will be `OptionBar`.
+* no function will be generated if `options` field tag is missing.
+* comments will be copied from the field to the generated function with the function putting in front.
