@@ -7,6 +7,7 @@ import (
 	"strings"
 )
 
+// WalkPackage filters out all the struct type spec given the pattern from the package
 func WalkPackage(pkg *ast.Package, pat *regexp.Regexp) []*ast.TypeSpec {
 	var structs []*ast.TypeSpec
 	if pkg.Name == "main" || strings.HasSuffix(pkg.Name, "_test") {
@@ -40,7 +41,6 @@ func (v visitFn) Visit(node ast.Node) ast.Visitor {
 	descend := v(node)
 	if descend {
 		return v
-	} else {
-		return nil
 	}
+	return nil
 }

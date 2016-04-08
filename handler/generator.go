@@ -13,12 +13,14 @@ const (
 	optionsTagName = "options"
 )
 
+// GenResult stores ast and comment generated from the struct
 type GenResult struct {
 	Comment *ast.CommentGroup
 	Decl    ast.Decl
 	Name    string
 }
 
+// GenFromStructType generates ast and comment given the struct
 func GenFromStructType(prefix string, tspec *ast.TypeSpec) ([]*GenResult, error) {
 	gened := []*GenResult{}
 	if _, ok := tspec.Type.(*ast.StructType); !ok {
