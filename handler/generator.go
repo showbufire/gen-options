@@ -3,10 +3,13 @@ package handler
 import (
 	"go/ast"
 	"go/token"
+	"reflect"
 	"strings"
 
 	"github.com/facebookgo/stackerr"
 )
+
+const optionsTagName = "options"
 
 func GenFromStructType(tspec *ast.TypeSpec) ([]ast.Decl, error) {
 	decls := []ast.Decl{}
@@ -24,13 +27,6 @@ func genOptionFromField(structName string, field *ast.Field) *ast.FuncDecl {
 	svarName := strings.ToLower(structName[0:1])
 	fieldName := field.Names[0].Name
 
-	optionType := &ast.FuncType{
-		Params: &ast.FieldList{
-			List: []*ast.Field{
-				{Type: &ast.StarExpr{X: ast.NewIdent(structName)}},
-			},
-		},
-	}
 	outerType := &ast.FuncType{
 		Params: &ast.FieldList{List: []*ast.Field{
 			{
@@ -40,7 +36,12 @@ func genOptionFromField(structName string, field *ast.Field) *ast.FuncDecl {
 		}},
 		Results: &ast.FieldList{List: []*ast.Field{
 			{
-				Type: optionType,
+				Type: &ast.FuncType{
+					Params: &ast.FieldList{List: []*ast.Field{
+						{
+							Type: &ast.StarExpr{X: ast.NewIdent(structName)},
+						}},
+					}},
 			},
 		}},
 	}
@@ -48,7 +49,7 @@ func genOptionFromField(structName string, field *ast.Field) *ast.FuncDecl {
 	innerParams := &ast.FieldList{List: []*ast.Field{
 		{
 			Names: []*ast.Ident{ast.NewIdent(svarName)},
-			Type:  optionType,
+			Type:  &ast.StarExpr{X: ast.NewIdent(structName)},
 		}},
 	}
 
@@ -73,11 +74,25 @@ func genOptionFromField(structName string, field *ast.Field) *ast.FuncDecl {
 		}},
 	}
 
-	outerName := "Option" + strings.ToUpper(fieldName[0:1]) + fieldName[1:len(fieldName)]
+	tags := ""
+	if field.Tag != nil {
+		tags = field.Tag.Value
+	}
+	outerName := getOptionFuncName(tags, fieldName)
 
 	return &ast.FuncDecl{
 		Name: ast.NewIdent(outerName), // TODO: load field tag
 		Type: outerType,
 		Body: outerBody,
 	}
+}
+
+func getOptionFuncName(tags string, fieldName string) string {
+	if tags != "" && tags[0] == '`' && tags[len(tags)-1] == '`' {
+		tag := reflect.StructTag(tags[1:len(tags)]).Get(optionsTagName)
+		if tag != "" {
+			return "Option" + tag
+		}
+	}
+	return "Option" + strings.ToUpper(fieldName[0:1]) + fieldName[1:len(fieldName)]
 }
