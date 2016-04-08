@@ -3,15 +3,14 @@ package handler
 import (
 	"go/ast"
 	"go/token"
-	"reflect"
 	"strings"
 
 	"github.com/facebookgo/stackerr"
+	"github.com/facebookgo/structtag"
 )
 
 const (
 	optionsTagName = "options"
-	omitTag        = "_omit"
 )
 
 func GenFromStructType(prefix string, tspec *ast.TypeSpec) ([]ast.Decl, error) {
@@ -29,18 +28,17 @@ func GenFromStructType(prefix string, tspec *ast.TypeSpec) ([]ast.Decl, error) {
 }
 
 func genOptionFromField(structName string, field *ast.Field, prefix string) *ast.FuncDecl {
-	tag := getTag(field)
-	if tag == omitTag {
-		// skip this field if omitted
+	found, tag, err := getTag(field)
+	if err != nil || found == false {
+		// skip a field by default if no field tag
 		return nil
 	}
-
-	svarName := strings.ToLower(structName[0:1])
-
 	if len(field.Names) == 0 {
 		// skip anonymous field
 		return nil
 	}
+
+	svarName := strings.ToLower(structName[0:1])
 
 	fieldName := field.Names[0].Name
 
@@ -106,33 +104,25 @@ func genOptionFromField(structName string, field *ast.Field, prefix string) *ast
 	}
 }
 
-func getTag(field *ast.Field) string {
+func getTag(field *ast.Field) (bool, string, error) {
 	if field.Tag == nil {
-		return ""
+		return false, "", nil
 	}
 	tags := field.Tag.Value
 	if tags != "" && tags[0] == '`' && tags[len(tags)-1] == '`' {
-		return reflect.StructTag(tags[1:len(tags)]).Get(optionsTagName)
+		return structtag.Extract(optionsTagName, tags[1:len(tags)])
 	}
-	return ""
+	return false, "", nil
 }
 
 func getDoc(field *ast.Field, funcName string) *ast.CommentGroup {
 	if field.Doc == nil {
 		return nil
 	}
-
-	// to make go lint happy, only works with "//" style for now
-	fstComment := field.Doc.List[0].Text
-	c := &ast.Comment{}
-	if strings.HasPrefix(fstComment, "//") {
-		c.Text = "// " + funcName + fstComment[2:len(fstComment)]
-	} else {
-		c.Text = fstComment
+	c := field.Doc.List[0]
+	if strings.HasPrefix(c.Text, "//") {
+		c.Text = "// " + funcName + c.Text[2:len(c.Text)]
 	}
-	doc := &ast.CommentGroup{}
-	doc.List = make([]*ast.Comment, len(field.Doc.List), len(field.Doc.List))
-	copy(doc.List, field.Doc.List)
-	doc.List[0] = c
-	return doc
+
+	return field.Doc
 }

@@ -2,7 +2,8 @@
 
 package example
 
-func MyOptionXYZ(xyz int) func(*Baz) {
+func MyOptionXYZ(xyz int) func // MyOptionXYZ the generated function is OptionXYZ
+(*Baz) {
 	return func(b *Baz) {
 		b.xyz = xyz
 	}

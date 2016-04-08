@@ -4,25 +4,28 @@ package example
 
 import "go/ast"
 
-func MyOptionFirst(fst int) func(*Foo) {
+func MyOptionFirst(fst int) func // MyOptionFirst the generated function is MyOptionFirst
+(*Foo) {
 	return func(f *Foo) {
 		f.fst = fst
 	}
 }
 
+// MyOptionSecond the generated function is MyOptionSecond
 func MyOptionSecond(snd *Bar) func(*Foo) {
 	return func(f *Foo) {
 		f.snd = snd
 	}
 }
 
+// MyOptionTrd the generated function is MyOptionTrd
 func MyOptionTrd(trd []string) func(*Foo) {
 	return func(f *Foo) {
 		f.trd = trd
 	}
 }
 
-// MyOptionFourth fourth field first comment 1st line
+// MyOptionFourth the generated function is MyOptionFourth
 // fourth field first comment 2nd line
 func MyOptionFourth(fourth *ast.Field) func(*Foo) {
 	return func(f *Foo) {
