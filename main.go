@@ -28,6 +28,7 @@ var (
 	outDir       = flag.String("o", ".", "output directory")
 	writeFiles   = flag.Bool("w", false, "write over existing files in output directory (default: writes to stdout)")
 	prefix       = flag.String("f", "Option", "prefix of the function names")
+	typeAlias    = flag.String("t", "Option", "type alias of the return value of option functions, empty if not needed")
 
 	fset = token.NewFileSet()
 )
@@ -63,7 +64,7 @@ func work() error {
 		tspecs := handler.WalkPackage(pkg, pat)
 		fname2gened := make(map[string][]*handler.GenResult)
 		for _, tspec := range tspecs {
-			gened, err := handler.GenFromStructType(*prefix, tspec)
+			gened, err := handler.GenFromStructType(*prefix, tspec, *typeAlias)
 			if err != nil {
 				return stackerr.Wrap(err)
 			}

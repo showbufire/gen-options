@@ -1,6 +1,6 @@
 package example
 
-//go:generate gen-options -s Foo|Baz -w -f MyOption
+//go:generate gen-options -s Foo -w -f MyOption
 
 import "go/ast"
 
@@ -10,7 +10,6 @@ type Foo struct {
 	// the generated function is MyOptionFirst
 	fst int `options:"First"`
 
-	// the generated function is MyOptionSecond
 	snd *Bar `options:"Second"`
 
 	// the generated function is MyOptionTrd

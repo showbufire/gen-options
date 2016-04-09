@@ -21,13 +21,40 @@ type GenResult struct {
 }
 
 // GenFromStructType generates ast and comment given the struct
-func GenFromStructType(prefix string, tspec *ast.TypeSpec) ([]*GenResult, error) {
+func GenFromStructType(prefix string, tspec *ast.TypeSpec,
+	typeAlias string) ([]*GenResult, error) {
+
 	gened := []*GenResult{}
 	if _, ok := tspec.Type.(*ast.StructType); !ok {
 		return gened, stackerr.Newf("not a struct type %v", tspec)
 	}
+
+	structName := tspec.Name.Name
+	funcType := &ast.FuncType{Params: &ast.FieldList{List: []*ast.Field{
+		{
+			Type: &ast.StarExpr{X: ast.NewIdent(structName)},
+		}},
+	}}
+
+	var optionType ast.Expr
+	if typeAlias == "" {
+		optionType = funcType
+	} else {
+		optionType = ast.NewIdent(typeAlias)
+		ts := &ast.TypeSpec{
+			Name: ast.NewIdent(typeAlias),
+			Type: funcType,
+		}
+		gened = append(gened, &GenResult{
+			Decl: &ast.GenDecl{
+				Tok:   token.TYPE,
+				Specs: []ast.Spec{ts},
+			},
+		})
+	}
+
 	for _, field := range tspec.Type.(*ast.StructType).Fields.List {
-		res := genOptionFromField(tspec.Name.Name, field, prefix)
+		res := genOptionFromField(structName, field, prefix, optionType)
 		if res != nil {
 			gened = append(gened, res)
 		}
@@ -35,7 +62,9 @@ func GenFromStructType(prefix string, tspec *ast.TypeSpec) ([]*GenResult, error)
 	return gened, nil
 }
 
-func genOptionFromField(structName string, field *ast.Field, prefix string) *GenResult {
+func genOptionFromField(structName string, field *ast.Field,
+	prefix string, funcType ast.Expr) *GenResult {
+
 	found, tag, err := getTag(field)
 	if err != nil || found == false {
 		// skip a field by default if no field tag
@@ -59,12 +88,7 @@ func genOptionFromField(structName string, field *ast.Field, prefix string) *Gen
 		}},
 		Results: &ast.FieldList{List: []*ast.Field{
 			{
-				Type: &ast.FuncType{
-					Params: &ast.FieldList{List: []*ast.Field{
-						{
-							Type: &ast.StarExpr{X: ast.NewIdent(structName)},
-						}},
-					}},
+				Type: funcType,
 			},
 		}},
 	}
