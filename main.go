@@ -119,16 +119,21 @@ func write2file(outDir, outPkg string, fname2gened map[string][]*handler.GenResu
 		}
 		src := buf.Bytes()
 		for _, g := range gened {
-			if g.Comment == nil {
+			if g.Name == "" {
+				// skip type alias
 				continue
 			}
+			funcHeader := "\n"
 			funcName := "func " + g.Name + "("
-			comments := ""
-			for _, c := range g.Comment.List {
-				comments += c.Text + "\n"
+			if g.Comment != nil {
+				comments := ""
+				for _, c := range g.Comment.List {
+					comments += c.Text + "\n"
+				}
+				funcHeader = funcHeader + comments
 			}
 			src = bytes.Replace(src, []byte(funcName),
-				[]byte(comments+funcName), 1)
+				[]byte(funcHeader+funcName), 1)
 		}
 
 		src, err := imports.Process(filename, src, nil)

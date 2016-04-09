@@ -12,6 +12,7 @@ func MyOptionFirst(fst int) Option {
 		f.fst = fst
 	}
 }
+
 func MyOptionSecond(snd *Bar) Option {
 	return func(f *Foo) {
 		f.snd = snd
