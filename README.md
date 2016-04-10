@@ -44,3 +44,5 @@ By default, for each field named `bar`, it will generate a function `OptionBar`.
 For example, if ``bar string `options:"Baz"` ``, then the generated will be `OptionBaz`. If it's `options:""`, then the generated will be `OptionBar`.
 * no function will be generated if `options` field tag is missing.
 * comments will be copied from the field to the generated function with the function putting in front.
+
+By default, it will generate a type alias `type Option func(*YourStruct)`, you can turn it off or change to another name by using the `-t` option: `-t=""` or `-t="SomeOption"`.
